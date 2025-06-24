@@ -34,10 +34,8 @@ def get_juniper_info(modelos):
 
 
 if __name__ == "__main__":
-    # Fetch the content from the URL
-    # response = requests.get(url)
     modelos = sys.argv[1:]
-    if not modelos: modelos = ['MX10003','PTX10004']
+    if not modelos: modelos = ['MX10003','PTX10004','QFX5120-32C']
     informacion = get_juniper_info(modelos)
     print(informacion)
     

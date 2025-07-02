@@ -35,3 +35,4 @@ if __name__ == "__main__":
         app.run(host='0.0.0.0', port=8002, debug=True)
     except BaseException as e:
         print('BaseException en main: '+str(e))
+        #curl -i -H "Content-Type: application/json" -X GET http://127.0.0.1:8002/get_updates?brand=juniper

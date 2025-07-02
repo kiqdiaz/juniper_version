@@ -6,9 +6,17 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 import time
 
-urls = ['https://support.huawei.com/enterprise/en/routers/netengine-8000-pid-252772223/software',
-        'https://support.huawei.com/enterprise/en/switches/s7700-s8700-s9700-s12700-s16700-pid-259602655/software',
-        'https://support.huawei.com/enterprise/en/switches/s3700-s5700-s6700-pid-259602657/software']
+urls = ['https://support.huawei.com/enterprise/en/routers/netengine%208000%20m8-pid-250517142/software?offeringId=252772223',
+        # 'https://support.huawei.com/enterprise/en/routers/netengine-8000-pid-252772223/software',
+        # 'https://support.huawei.com/enterprise/en/switches/s7700-s8700-s9700-s12700-s16700-pid-259602655/software',
+        'https://support.huawei.com/enterprise/en/switches/cloudengine%20s12700e-8-pid-250450830/software?offeringId=259602655',
+        'https://support.huawei.com/enterprise/en/switches/cloudengine-s12700e-4-pid-250450838/software?offeringId=259602655',
+        'https://support.huawei.com/enterprise/en/switches/cloudengine%20s6730-h-v2-pid-253349373/software?offeringId=259602657',
+        'https://support.huawei.com/enterprise/en/switches/cloudengine%20s6730-h48x6c-pid-250538951/software?offeringId=259602657',
+        'https://support.huawei.com/enterprise/en/switches/cloudengine%20s5731-h24t4xc-pid-250387184/software?offeringId=259602657',
+        'https://support.huawei.com/enterprise/en/switches/s5730-36c-hi-24s-pid-23474113/software?offeringId=259602657',
+        # 'https://support.huawei.com/enterprise/en/switches/s3700-s5700-s6700-pid-259602657/software'
+        ]
 
 def get_huawei_info(modelos):
     # session = HTMLSession()
@@ -18,8 +26,9 @@ def get_huawei_info(modelos):
     # response = session.get(url)
     # response.html.render(timeout=120)
     informacion = []
-
+    diccionario = {}
     for url in urls:
+        # print('*'*20)
         options = Options()
         options.headless = True
         response = webdriver.Chrome(options=options)
@@ -27,6 +36,13 @@ def get_huawei_info(modelos):
         time.sleep(10)  # Wait for the page to load completely
         soup = BeautifulSoup(response.page_source, 'html.parser')
         values = soup.find_all('div',{'class': 'el-table__inner-wrapper'})
+        modelowebraw = soup.find_all('div', {'id': 'header-wrap'})
+        for i, valores in enumerate(modelowebraw):
+            valor = valores.find_all('div',{'class':'title'})
+            for j, val in enumerate(valor):
+                # print(str(i),str(j),val.get_text(strip=True))
+                modeloweb = val.get_text(strip=True)
+        diccionario = {}
         for i,valor in enumerate(values):
             trs = valor.find_all('tr')
             encabezados = []
@@ -37,9 +53,25 @@ def get_huawei_info(modelos):
                 tds = tr.find_all('td')
                 if not valores: 
                     valores = [x.get_text(strip=True) for x in tds]
-                    diccionario = dict(zip(encabezados, valores))
-                    if diccionario != {}: informacion.append(dict(zip(encabezados, valores)))
-                    del valores
+                    diccionario2 = dict(zip(encabezados, valores))
+                    if diccionario2 != {}: 
+                        if 'Version and Patch Number' in diccionario2.keys():
+                            diccionario.update({'model':modeloweb,
+                                            'brand': 'huawei',
+                                            'url': url,
+                                            'latest_version': diccionario2['Version and Patch Number'],
+                                            'last_updated_version': diccionario2['Publication Date'],
+                                            })
+                        else:
+                            diccionario.update({'model':modeloweb,
+                                            'brand': 'huawei',
+                                            'latest_patch': diccionario2['Patch Number'],
+                                            'last_updated_patch': diccionario2['Publication Date'],
+                                            })
+                del valores
+        informacion.append(diccionario)
+        del diccionario
+                
     return informacion
 
 if __name__ == "__main__":
